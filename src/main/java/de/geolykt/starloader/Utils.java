@@ -63,9 +63,11 @@ public class Utils {
 
     public static final File getSteamExecutableDir() {
         if (OPERATING_SYSTEM.toLowerCase(Locale.ROOT).startsWith("win")) {
-            // TODO test
             String val = readWindowsRegistry(STEAM_WINDOWS_REGISTRY_KEY, STEAM_WINDOWS_REGISTRY_INSTALL_DIR_KEY);
             System.out.println(val);
+            if (val == null) {
+                return null;
+            }
             return new File(val);
         } else {
             // Assuming UNIX, though for real we should check other OSes
@@ -87,7 +89,12 @@ public class Utils {
     }
 
     public static File getGameDir(String game) {
-        File steamExec = getSteamExecutableDir();
+        File steamExec = null;
+        try {
+            steamExec = getSteamExecutableDir();
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
         if (steamExec == null || !steamExec.exists()) {
             if (OPERATING_SYSTEM.toLowerCase(Locale.ROOT).startsWith("win")) {
                 steamExec = getOneOfExistingFiles("C:\\Steam\\", "C:\\Program Files (x86)\\Steam\\",
