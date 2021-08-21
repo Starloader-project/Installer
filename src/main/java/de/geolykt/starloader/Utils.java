@@ -1,11 +1,10 @@
 package de.geolykt.starloader;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.net.URLClassLoader;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 public class Utils {
@@ -27,13 +26,29 @@ public class Utils {
     public static final String STEAM_WINDOWS_REGISTRY_KEY = "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Valve\\Steam";
     public static final String STEAM_WINDOWS_REGISTRY_INSTALL_DIR_KEY = "InstallPath";
 
+    public static byte[] streamReadAllBytes(InputStream stream) {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        int nRead;
+        byte[] data = new byte[4096];
+
+        try {
+            while ((nRead = stream.read(data, 0, data.length)) != -1) {
+                buffer.write(data, 0, nRead);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return buffer.toByteArray();
+        }
+        return buffer.toByteArray();
+    }
+
     /**
      * Stupid little hack.
      *
      * @param location path in the registry
      * @param key registry key
      * @return registry value or null if not found
-     * @author Oleg Ryaboy, based on work by Miguel Enriquez; Made blocking by Geolykt
+     * @author Oleg Ryaboy, based on work by Miguel Enriquez; Made blocking and fixed by Geolykt
      */
     public static final String readWindowsRegistry(String location, String key){
         try {
@@ -43,22 +58,23 @@ public class Utils {
 
             process.waitFor();
             @SuppressWarnings("resource")
-            String output = new String(process.getInputStream().readAllBytes());
+            InputStream is = process.getInputStream();
+            String output = new String(streamReadAllBytes(is), StandardCharsets.UTF_8);
+            is.close();
 
-            // Output has the following format:
-            // \n<Version information>\n\n<key>\t<registry type>\t<value>
-            if(!output.contains("\t")){
-                    return null;
+            if(!output.contains(location) ||!output.contains(key)){
+                return null;
             }
 
             // Parse out the value
-            String[] parsed = output.split("\t");
+            // For me this results in:
+            // [, HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Valve\Steam, InstallPath, REG_SZ, D:\Programmes\Steam]
+            String[] parsed = output.split("\\s+");
             return parsed[parsed.length-1];
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
-
     }
 
     public static final File getSteamExecutableDir() {
@@ -128,45 +144,6 @@ public class Utils {
         File appdata = new File(steamExec, "steamapps");
         File common = new File(appdata, "common");
         return new File(common, game);
-    }
-
-    public static String getChecksum(File file) {
-        MessageDigest digest;
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-        if (!file.exists()) {
-            throw new RuntimeException("Jar was not found!");
-        }
-        try (DigestInputStream digestStream = new DigestInputStream(new FileInputStream(file), digest)) {
-            if (isJava9()) {
-                digestStream.readAllBytes(); // This should be considerably faster than the other methods, however only got introduced in Java 9
-            } else {
-                while (digestStream.read() != -1) {
-                    // Empty block; Read all bytes
-                }
-            }
-            digest = digestStream.getMessageDigest();
-        } catch (Exception e) {
-            throw new RuntimeException("Something went wrong while obtaining the checksum of the galimulator jar.", e);
-        }
-        StringBuilder result = new StringBuilder();
-        for (byte b : digest.digest()) {
-            result.append(String.format("%02x", b));
-        }
-        return result.toString();
-    }
-
-    public static final boolean isJava9() {
-        try {
-            URLClassLoader.getPlatformClassLoader(); // This should throw an error in Java 8 and below
-            // I am well aware that this will never throw an error due to Java versions, but it's stil a bit of futureproofing
-            return true;
-        } catch (Throwable e) {
-            return false;
-        }
     }
 
     public static File getCurrentDir() {

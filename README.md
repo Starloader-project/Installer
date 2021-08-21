@@ -31,7 +31,7 @@ the quotation marks. All other arguments have to be provided BEFORE the second q
 This can be done by modifing the beforementioned galimulator-linux-64-bit, steam will treat
 the file like your ordinary shell script.
 
-## A not about proton
-If you run Galimulator via Proton or the Steam Linux runtime then the install will be ruined.
+## A note about Proton and Steam Linux runtime
+If you run Galimulator via Proton or the Steam Linux runtime then the install will be ruined - so do NOT do this.
 Instead, uncheck the `For use of a Specific Steam Play compatibillity Tool` in the `Compatibillity`
 menu.
