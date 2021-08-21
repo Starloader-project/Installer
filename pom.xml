@@ -1,0 +1,85 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>de.geolykt.starloader</groupId>
+    <artifactId>installer</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>Installer</name>
+    <description>Installs starloader</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>tablelayout</groupId>
+            <artifactId>TableLayout</artifactId>
+            <version>20050920</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.11.0</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <!-- Java 6 or 7 is almost never used nowadays and Java
+                        9+ has limited adoption in the consumer market that we (sadly) target. That
+                        being said this installer installs Java 11 so the fast that Starloader makes
+                        use of J11 is not an issue. Later on we might update to Java 17 as soon as
+                        it is released. -->
+                    <target>8</target>
+                    <source>8</source>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>de.geolykt.starloader.Installer</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.3.0-SNAPSHOT</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <relocations>
+                        <relocation>
+                            <pattern>info.clearthought.layout</pattern>
+                            <shadedPattern>de.geolykt.starloader.internal.info.clearthought.layout</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.apache.commons.compress</pattern>
+                            <shadedPattern>de.geolykt.starloader.internal.org.apache.commons.compress</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>org.apache.commons.io</pattern>
+                            <shadedPattern>de.geolykt.starloader.internal.org.apache.commons.io</shadedPattern>
+                        </relocation>
+                    </relocations>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
