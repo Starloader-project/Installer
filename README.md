@@ -22,7 +22,7 @@ java -jar starloader.jar
 
 ## Windows
 This can be done by using Steam's builtin `Launch Options` facitility.
-To set the maximum heap size to 4Gb you will for example have `"java -jar starloader.jar -xmx"`
+To set the maximum heap size to 4Gb you will for example have `"java -jar starloader.jar -xmx 4G"`
 the quotation marks HAVE to be present at all times, otherwise it wont start.
 To also boot up a console `--console` can be appended to the launch options, AFTER
 the quotation marks. All other arguments have to be provided BEFORE the second quotation mark
